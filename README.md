@@ -14,7 +14,7 @@
 </p>
 
 ---
-Deneyimlemek için web site linki: src="https://buldozer.netlify.app/" />
+Deneyimlemek için web site linki: "https://buldozer.netlify.app/"
 
 ## 🎮 Oyun Hakkında
 
