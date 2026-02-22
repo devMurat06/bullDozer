@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BullDozer — Açık Dünya Ada Macerası 🏝️</title>
+    <meta name="description"
+        content="Minecraft ve Mario tarzı pixel art açık dünya ada macerası. 3 ada keşfet, kaynak topla, inşa et!">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+
+        <!-- Arka Plan Müziği -->
+        <audio id="bg-music" loop preload="auto">
+            <source src="bulldozer.mp3" type="audio/mpeg">
+        </audio>
+
+        <!-- Geçiş Videosu: Cennet → Volkan -->
+        <video id="transition-video-volkan" preload="auto" style="display:none">
+            <source src="bulldozerVolkan.mp4" type="video/mp4">
+        </video>
+
+        <!-- Geçiş Videosu: Volkan → Buzul -->
+        <video id="transition-video-buzul" preload="auto" style="display:none">
+            <source src="bulldozerBuzul.mp4" type="video/mp4">
+        </video>
+
+        <div id="hud">
+            <!-- Ada Adı + Zaman (Üst Orta) -->
+            <div id="island-indicator">
+                <span id="island-name">🏝️ Cennet Adası</span>
+                <span id="day-phase-icon">☀️</span>
+            </div>
+
+            <!-- Task Panel -->
+            <div id="task-panel">
+                <div class="panel-header"><span class="panel-icon">📋</span> GÖREVLER</div>
+                <div id="task-list"></div>
+            </div>
+
+            <!-- Info Panel -->
+            <div id="info-panel">
+                <div class="info-row"><span class="info-icon">⭐</span><span id="score-value">0</span></div>
+                <div class="info-row"><span class="info-icon">🏗️</span><span id="buildings-count">0</span></div>
+                <div class="info-row"><span class="info-icon">💎</span><span id="stones-count">0</span></div>
+            </div>
+
+            <!-- Envanter -->
+            <div id="inventory-panel">
+                <div class="panel-header"><span class="panel-icon">🎒</span> ENVANTER</div>
+                <div id="inventory-items">
+                    <div class="inv-item"><span class="inv-icon">🪵</span><span id="inv-wood">0</span></div>
+                    <div class="inv-item"><span class="inv-icon">🪨</span><span id="inv-stone">0</span></div>
+                    <div class="inv-item"><span class="inv-icon">🐟</span><span id="inv-fish">0</span></div>
+                </div>
+            </div>
+
+            <!-- Hava Durumu -->
+            <div id="weather-indicator">
+                <span id="weather-icon">☀️</span>
+            </div>
+
+            <!-- Notification -->
+            <div id="notification" class="hidden">
+                <div id="notification-icon"></div>
+                <div id="notification-text"></div>
+            </div>
+
+            <!-- Build Toolbar -->
+            <div id="build-toolbar" class="hidden">
+                <div class="toolbar-header">🔨 İNŞAAT MODU | 1: Kaz 2: Doldur 3: Nesne</div>
+                <div id="toolbar-items"></div>
+            </div>
+
+            <!-- Controls -->
+            <div id="controls-hint">
+                <span>WASD: Hareket</span>
+                <span>B: İnşaat</span>
+                <span>E: Etkileşim</span>
+                <span>F: Topla</span>
+                <span>ESC: İptal</span>
+            </div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <div class="start-content">
+                <h1 class="game-title">🏗️ BULLDOZER</h1>
+                <p class="game-subtitle">Açık Dünya Ada Macerası</p>
+                <div class="start-island-art">🏝️ ⛵ 🌋 ⛵ ❄️</div>
+                <div class="feature-list">
+                    <span class="feature-tag">🗺️ 3 Ada</span>
+                    <span class="feature-tag">🌅 Gündüz/Gece</span>
+                    <span class="feature-tag">🌧️ Hava Durumu</span>
+                    <span class="feature-tag">🎒 Envanter</span>
+                    <span class="feature-tag">🗺️ Minimap</span>
+                    <span class="feature-tag">📖 Hikaye</span>
+                </div>
+                <button id="start-btn" class="pixel-btn">MACERAYA BAŞLA</button>
+                <p class="start-hint">🎵 Müzik ile tam deneyim!</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/world.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/objects.js"></script>
+    <script src="js/tasks.js"></script>
+    <script src="js/story.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/game.js"></script>
+</body>
+
+</html>
