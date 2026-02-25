@@ -210,4 +210,3 @@ Bu proje eğitim ve kişisel kullanım amaçlıdır.
   <em>Keşfet · Topla · İnşa Et · Fethet</em>
 </p>
 
-N♥️
