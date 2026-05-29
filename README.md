@@ -209,5 +209,3 @@ Bu proje eğitim ve kişisel kullanım amaçlıdır.
   <strong>🏗️ BullDozer</strong> ile maceraya atıl!<br>
   <em>Keşfet · Topla · İnşa Et · Fethet</em>
 </p>
-
-N ♥️
