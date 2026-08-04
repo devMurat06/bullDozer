@@ -1,0 +1,21 @@
+{
+  "name": "bulldozer",
+  "version": "1.0.0",
+  "description": "Voxel Sandbox Adventure Game",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/three": "^0.185.3",
+    "esbuild": "^0.28.1",
+    "three": "^0.185.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.0"
+  }
+}
