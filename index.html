@@ -1,120 +1,755 @@
 <!DOCTYPE html>
-<html lang="tr">
-
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BullDozer — Açık Dünya Ada Macerası 🏝️</title>
-    <meta name="description"
-        content="Minecraft ve Mario tarzı pixel art açık dünya ada macerası. 3 ada keşfet, kaynak topla, inşa et!">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bullDozer - Voxel Sandbox Adventure</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #0a0a0f;
+      font-family: 'Press Start 2P', monospace;
+      user-select: none;
+    }
+
+    #game-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    #game-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Loading Screen */
+    #loading-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      transition: opacity 0.5s ease;
+    }
+
+    #loading-screen.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-title {
+      font-size: 48px;
+      color: #fff;
+      text-shadow: 4px 4px 0 #4a4a6a;
+      margin-bottom: 20px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .loading-bar-container {
+      width: 300px;
+      height: 20px;
+      background: rgba(0,0,0,0.5);
+      border: 3px solid #fff;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .loading-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #4ade80, #22c55e);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .loading-text {
+      color: #aaa;
+      font-size: 12px;
+      margin-top: 15px;
+    }
+
+    /* Main Menu */
+    #main-menu {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 900;
+      display: none;
+    }
+
+    #main-menu.visible {
+      display: flex;
+    }
+
+    .menu-title {
+      font-size: 64px;
+      color: #fff;
+      text-shadow: 6px 6px 0 #4a4a6a, -2px -2px 0 #8b7355;
+      margin-bottom: 10px;
+      letter-spacing: 4px;
+    }
+
+    .menu-subtitle {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 50px;
+    }
+
+    .menu-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .menu-btn {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 16px;
+      padding: 15px 40px;
+      background: linear-gradient(180deg, #4a4a6a 0%, #2a2a4a 100%);
+      color: #fff;
+      border: 4px solid #6a6a8a;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-shadow: 2px 2px 0 #000;
+    }
+
+    .menu-btn:hover {
+      background: linear-gradient(180deg, #5a5a7a 0%, #3a3a5a 100%);
+      border-color: #8a8aaa;
+      transform: translateY(-2px);
+    }
+
+    .menu-btn:active {
+      transform: translateY(0);
+    }
+
+    .menu-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* HUD */
+    #hud {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 100;
+      display: none;
+    }
+
+    #hud.visible {
+      display: block;
+    }
+
+    /* Crosshair */
+    #crosshair {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 20px;
+      height: 20px;
+    }
+
+    #crosshair::before,
+    #crosshair::after {
+      content: '';
+      position: absolute;
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    #crosshair::before {
+      width: 2px;
+      height: 20px;
+      left: 9px;
+      top: 0;
+    }
+
+    #crosshair::after {
+      width: 20px;
+      height: 2px;
+      top: 9px;
+      left: 0;
+    }
+
+    /* Hotbar */
+    #hotbar {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 4px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 8px;
+      border-radius: 4px;
+      border: 2px solid #444;
+    }
+
+    .hotbar-slot {
+      width: 50px;
+      height: 50px;
+      background: rgba(50, 50, 50, 0.8);
+      border: 2px solid #666;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    .hotbar-slot.selected {
+      border-color: #ffd700;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+
+    .hotbar-slot span {
+      font-size: 20px;
+    }
+
+    .hotbar-count {
+      position: absolute;
+      bottom: 2px;
+      right: 4px;
+      font-size: 10px;
+      color: #fff;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    .hotbar-key {
+      position: absolute;
+      top: 2px;
+      left: 4px;
+      font-size: 8px;
+      color: #aaa;
+    }
+
+    /* Health Bar */
+    #health-container {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 200px;
+    }
+
+    #health-bar {
+      height: 20px;
+      background: linear-gradient(90deg, #dc2626, #ef4444);
+      width: 100%;
+      transition: width 0.2s ease;
+    }
+
+    #health-bg {
+      height: 20px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 2px solid #444;
+    }
+
+    #health-text {
+      color: #fff;
+      font-size: 12px;
+      margin-top: 5px;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    /* Island Indicator */
+    #island-indicator {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px 20px;
+      border-radius: 4px;
+      border: 2px solid #444;
+      color: #fff;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    #time-display {
+      margin-top: 5px;
+      font-size: 10px;
+      color: #aaa;
+    }
+
+    /* Objectives */
+    #objectives-panel {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 250px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 15px;
+      border-radius: 4px;
+      border: 2px solid #444;
+    }
+
+    #objectives-title {
+      color: #ffd700;
+      font-size: 12px;
+      margin-bottom: 10px;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    .objective-item {
+      font-size: 10px;
+      color: #ccc;
+      padding: 5px 0;
+      border-bottom: 1px solid #333;
+    }
+
+    .objective-item.completed {
+      color: #4ade80;
+      text-decoration: line-through;
+    }
+
+    /* Pause Menu */
+    #pause-menu {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 800;
+      pointer-events: auto;
+    }
+
+    #pause-menu.visible {
+      display: flex;
+    }
+
+    .pause-title {
+      font-size: 36px;
+      color: #fff;
+      margin-bottom: 40px;
+      text-shadow: 4px 4px 0 #4a4a6a;
+    }
+
+    /* Inventory */
+    #inventory-screen {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      height: 400px;
+      background: rgba(20, 20, 30, 0.95);
+      border: 4px solid #4a4a6a;
+      border-radius: 8px;
+      display: none;
+      flex-direction: column;
+      z-index: 700;
+      pointer-events: auto;
+    }
+
+    #inventory-screen.visible {
+      display: flex;
+    }
+
+    .inventory-header {
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.5);
+      border-bottom: 2px solid #4a4a6a;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .inventory-title {
+      color: #fff;
+      font-size: 16px;
+    }
+
+    .inventory-close {
+      background: transparent;
+      border: 2px solid #666;
+      color: #fff;
+      padding: 5px 15px;
+      cursor: pointer;
+      font-family: 'Press Start 2P', monospace;
+    }
+
+    .inventory-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .inventory-content {
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      gap: 20px;
+    }
+
+    .inventory-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 4px;
+    }
+
+    .inv-slot {
+      width: 48px;
+      height: 48px;
+      background: rgba(50, 50, 60, 0.8);
+      border: 2px solid #555;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .inv-slot:hover {
+      border-color: #888;
+    }
+
+    .inv-slot.selected {
+      border-color: #ffd700;
+    }
+
+    .inv-icon {
+      font-size: 24px;
+    }
+
+    .inv-count {
+      position: absolute;
+      bottom: 2px;
+      right: 4px;
+      font-size: 10px;
+      color: #fff;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    .crafting-panel {
+      width: 200px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px;
+      border-radius: 4px;
+    }
+
+    .crafting-title {
+      color: #ffd700;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+
+    .crafting-list {
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .crafting-item {
+      padding: 8px;
+      background: rgba(50, 50, 60, 0.5);
+      margin-bottom: 4px;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+
+    .crafting-item:hover {
+      border-color: #888;
+    }
+
+    .crafting-item.can-craft {
+      border-color: #4ade80;
+    }
+
+    .crafting-name {
+      color: #fff;
+      font-size: 10px;
+      margin-bottom: 4px;
+    }
+
+    .crafting-materials {
+      color: #aaa;
+      font-size: 8px;
+    }
+
+    /* Notifications */
+    #notifications {
+      position: absolute;
+      top: 100px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .notification {
+      background: rgba(0, 0, 0, 0.8);
+      border: 2px solid #444;
+      border-radius: 4px;
+      padding: 10px 15px;
+      color: #fff;
+      font-size: 12px;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .notification.success {
+      border-color: #4ade80;
+    }
+
+    .notification.error {
+      border-color: #ef4444;
+    }
+
+    .notification.info {
+      border-color: #60a5fa;
+    }
+
+    /* Settings Panel */
+    #settings-panel {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 400px;
+      background: rgba(20, 20, 30, 0.95);
+      border: 4px solid #4a4a6a;
+      border-radius: 8px;
+      display: none;
+      flex-direction: column;
+      z-index: 750;
+      pointer-events: auto;
+    }
+
+    #settings-panel.visible {
+      display: flex;
+    }
+
+    .settings-header {
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.5);
+      border-bottom: 2px solid #4a4a6a;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .settings-title {
+      color: #fff;
+      font-size: 16px;
+    }
+
+    .settings-content {
+      padding: 20px;
+    }
+
+    .setting-row {
+      margin-bottom: 15px;
+    }
+
+    .setting-label {
+      color: #aaa;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .setting-slider {
+      width: 100%;
+      height: 8px;
+      -webkit-appearance: none;
+      background: #333;
+      border-radius: 4px;
+      outline: none;
+    }
+
+    .setting-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: #4ade80;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    /* Controls hint */
+    #controls-hint {
+      position: absolute;
+      bottom: 100px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 8px;
+      color: #aaa;
+      line-height: 1.8;
+    }
+  </style>
 </head>
-
 <body>
-    <div id="game-container">
-        <canvas id="game-canvas"></canvas>
+  <div id="game-container">
+    <canvas id="game-canvas"></canvas>
 
-        <!-- Arka Plan Müziği -->
-        <audio id="bg-music" loop preload="auto">
-            <source src="bulldozer.mp3" type="audio/mpeg">
-        </audio>
-
-        <!-- Geçiş Videosu: Cennet → Volkan -->
-        <video id="transition-video-volkan" preload="auto" style="display:none">
-            <source src="bulldozerVolkan.mp4" type="video/mp4">
-        </video>
-
-        <!-- Geçiş Videosu: Volkan → Buzul -->
-        <video id="transition-video-buzul" preload="auto" style="display:none">
-            <source src="bulldozerBuzul.mp4" type="video/mp4">
-        </video>
-
-        <div id="hud">
-            <!-- Ada Adı + Zaman (Üst Orta) -->
-            <div id="island-indicator">
-                <span id="island-name">🏝️ Cennet Adası</span>
-                <span id="day-phase-icon">☀️</span>
-            </div>
-
-            <!-- Task Panel -->
-            <div id="task-panel">
-                <div class="panel-header"><span class="panel-icon">📋</span> GÖREVLER</div>
-                <div id="task-list"></div>
-            </div>
-
-            <!-- Info Panel -->
-            <div id="info-panel">
-                <div class="info-row"><span class="info-icon">⭐</span><span id="score-value">0</span></div>
-                <div class="info-row"><span class="info-icon">🏗️</span><span id="buildings-count">0</span></div>
-                <div class="info-row"><span class="info-icon">💎</span><span id="stones-count">0</span></div>
-            </div>
-
-            <!-- Envanter -->
-            <div id="inventory-panel">
-                <div class="panel-header"><span class="panel-icon">🎒</span> ENVANTER</div>
-                <div id="inventory-items">
-                    <div class="inv-item"><span class="inv-icon">🪵</span><span id="inv-wood">0</span></div>
-                    <div class="inv-item"><span class="inv-icon">🪨</span><span id="inv-stone">0</span></div>
-                    <div class="inv-item"><span class="inv-icon">🐟</span><span id="inv-fish">0</span></div>
-                </div>
-            </div>
-
-            <!-- Hava Durumu -->
-            <div id="weather-indicator">
-                <span id="weather-icon">☀️</span>
-            </div>
-
-            <!-- Notification -->
-            <div id="notification" class="hidden">
-                <div id="notification-icon"></div>
-                <div id="notification-text"></div>
-            </div>
-
-            <!-- Build Toolbar -->
-            <div id="build-toolbar" class="hidden">
-                <div class="toolbar-header">🔨 İNŞAAT MODU | 1: Kaz 2: Doldur 3: Nesne</div>
-                <div id="toolbar-items"></div>
-            </div>
-
-            <!-- Controls -->
-            <div id="controls-hint">
-                <span>WASD: Hareket</span>
-                <span>B: İnşaat</span>
-                <span>E: Etkileşim</span>
-                <span>F: Topla</span>
-                <span>ESC: İptal</span>
-            </div>
-        </div>
-
-        <!-- Start Screen -->
-        <div id="start-screen">
-            <div class="start-content">
-                <h1 class="game-title">🏗️ BULLDOZER</h1>
-                <p class="game-subtitle">Açık Dünya Ada Macerası</p>
-                <div class="start-island-art">🏝️ ⛵ 🌋 ⛵ ❄️</div>
-                <div class="feature-list">
-                    <span class="feature-tag">🗺️ 3 Ada</span>
-                    <span class="feature-tag">🌅 Gündüz/Gece</span>
-                    <span class="feature-tag">🌧️ Hava Durumu</span>
-                    <span class="feature-tag">🎒 Envanter</span>
-                    <span class="feature-tag">🗺️ Minimap</span>
-                    <span class="feature-tag">📖 Hikaye</span>
-                </div>
-                <button id="start-btn" class="pixel-btn">MACERAYA BAŞLA</button>
-                <p class="start-hint">🎵 Müzik ile tam deneyim!</p>
-            </div>
-        </div>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+      <div class="loading-title">🏗️ bullDozer</div>
+      <div class="loading-bar-container">
+        <div class="loading-bar" id="loading-bar"></div>
+      </div>
+      <div class="loading-text" id="loading-text">Loading...</div>
     </div>
 
-    <script src="js/world.js"></script>
-    <script src="js/player.js"></script>
-    <script src="js/objects.js"></script>
-    <script src="js/tasks.js"></script>
-    <script src="js/story.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/game.js"></script>
-</body>
+    <!-- Main Menu -->
+    <div id="main-menu">
+      <h1 class="menu-title">🏗️ bullDozer</h1>
+      <p class="menu-subtitle">Voxel Sandbox Adventure</p>
+      <div class="menu-buttons">
+        <button class="menu-btn" id="btn-new-game">New Game</button>
+        <button class="menu-btn" id="btn-continue" disabled>Continue</button>
+        <button class="menu-btn" id="btn-settings">Settings</button>
+        <button class="menu-btn" id="btn-how-to-play">How to Play</button>
+      </div>
+    </div>
 
+    <!-- HUD -->
+    <div id="hud">
+      <div id="crosshair"></div>
+
+      <div id="health-container">
+        <div id="health-bg">
+          <div id="health-bar"></div>
+        </div>
+        <div id="health-text">❤️ 100/100</div>
+      </div>
+
+      <div id="island-indicator">
+        <span id="island-name">🏝️ Verdant Isle</span>
+        <div id="time-display">☀️ Day 1 - Morning</div>
+      </div>
+
+      <div id="objectives-panel">
+        <div id="objectives-title">📋 OBJECTIVES</div>
+        <div id="objectives-list"></div>
+      </div>
+
+      <div id="hotbar">
+        <!-- Slots generated by JS -->
+      </div>
+
+      <div id="notifications"></div>
+
+      <div id="controls-hint">
+        WASD: Move<br/>
+        Mouse: Look<br/>
+        Space: Jump<br/>
+        Shift: Sprint<br/>
+        Left Click: Mine/Attack<br/>
+        Right Click: Place Block<br/>
+        E: Inventory<br/>
+        1-9: Hotbar Select<br/>
+        ESC: Pause
+      </div>
+    </div>
+
+    <!-- Pause Menu -->
+    <div id="pause-menu">
+      <h2 class="pause-title">⏸️ PAUSED</h2>
+      <div class="menu-buttons">
+        <button class="menu-btn" id="btn-resume">Resume</button>
+        <button class="menu-btn" id="btn-save">Save Game</button>
+        <button class="menu-btn" id="btn-settings-pause">Settings</button>
+        <button class="menu-btn" id="btn-main-menu">Main Menu</button>
+      </div>
+    </div>
+
+    <!-- Inventory Screen -->
+    <div id="inventory-screen">
+      <div class="inventory-header">
+        <span class="inventory-title">🎒 INVENTORY</span>
+        <button class="inventory-close" id="btn-close-inventory">✕</button>
+      </div>
+      <div class="inventory-content">
+        <div class="inventory-grid" id="inventory-grid"></div>
+        <div class="crafting-panel">
+          <div class="crafting-title">🔨 CRAFTING</div>
+          <div class="crafting-list" id="crafting-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div id="settings-panel">
+      <div class="settings-header">
+        <span class="settings-title">⚙️ SETTINGS</span>
+        <button class="inventory-close" id="btn-close-settings">✕</button>
+      </div>
+      <div class="settings-content">
+        <div class="setting-row">
+          <div class="setting-label">Master Volume</div>
+          <input type="range" class="setting-slider" id="slider-master-volume" min="0" max="100" value="70" />
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">Music Volume</div>
+          <input type="range" class="setting-slider" id="slider-music-volume" min="0" max="100" value="50" />
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">SFX Volume</div>
+          <input type="range" class="setting-slider" id="slider-sfx-volume" min="0" max="100" value="70" />
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">Mouse Sensitivity</div>
+          <input type="range" class="setting-slider" id="slider-mouse-sensitivity" min="1" max="10" value="5" />
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">Render Distance</div>
+          <input type="range" class="setting-slider" id="slider-render-distance" min="2" max="8" value="4" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
 </html>
